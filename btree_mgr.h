@@ -3,10 +3,17 @@
 
 #include "dberror.h"
 #include "tables.h"
+#include "storage_mgr.h"
+#include "buffer_mgr.h"
 
 // structure for accessing btrees
 typedef struct BTreeHandle {
   DataType keyType;
+  int rootPage;
+  int nodeNum;
+  int entryNum;
+  BM_BufferPool  bufferPool;
+  SM_FileHandle fileHandle;
   char *idxId;
   void *mgmtData;
 } BTreeHandle;
@@ -19,7 +26,7 @@ typedef struct BT_ScanHandle {
 // Add by Xincheng Yang 4/5/2016
 typedef union BT_Element {
   int node;
-  RID id,
+  RID id;
 } BT_Element;
 
 // Add by Xincheng Yang 4/5/2016
