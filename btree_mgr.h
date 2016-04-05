@@ -16,6 +16,21 @@ typedef struct BT_ScanHandle {
   void *mgmtData;
 } BT_ScanHandle;
 
+// Add by Xincheng Yang 4/5/2016
+typedef union BT_Element {
+  int node;
+  RID id,
+} BT_Element;
+
+// Add by Xincheng Yang 4/5/2016
+typedef struct BT_Node {
+  int parent;
+  int current;
+  int size;
+  BT_Element *element;
+} BT_Node;
+
+
 // init and shutdown index manager
 extern RC initIndexManager (void *mgmtData);
 extern RC shutdownIndexManager ();
@@ -41,5 +56,9 @@ extern RC closeTreeScan (BT_ScanHandle *handle);
 
 // debug and test functions
 extern char *printTree (BTreeHandle *tree);
+
+// Add by Xincheng Yang 4/5/2016
+extern RC getNode (BTreeHandle *tree, int nodeNum, BT_Node **node);
+extern RC setNode (BTreeHandle *tree, int nodeNum, BT_Node *node);
 
 #endif // BTREE_MGR_H
