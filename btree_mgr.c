@@ -78,7 +78,6 @@ RC shutdownIndexManager (){
 RC createBtree (char *idxId, DataType keyType, int n){
     SM_FileHandle *fHandle = (SM_FileHandle *)calloc(1, sizeof(SM_FileHandle));
     char *metadata = (char *)calloc(1, PAGE_SIZE);
-    char *read = (char *)malloc(PAGE_SIZE);
 
     int rootPage;
     int nodeNum;
@@ -92,10 +91,18 @@ RC createBtree (char *idxId, DataType keyType, int n){
     nodeNum = 0;
     entryNum = 0;
 
+    /*
+     * root page number
+     * the number of node
+     * the number of entry
+     * n
+     * key type
+     */
     memcpy(metadata, &rootPage, sizeof(int));
     memcpy(metadata + sizeof(int), &nodeNum, sizeof(int));
     memcpy(metadata + 2*sizeof(int), &entryNum, sizeof(int));
-    memcpy(metadata + 3*sizeof(int), &entryNum, sizeof(int));
+    memcpy(metadata + 3*sizeof(int), &n, sizeof(int));
+    memcpy(metadata + 4*sizeof(int), &keyType, sizeof(DataType));
 
     writeBlock(0, fHandle, metadata);
 
@@ -106,60 +113,106 @@ RC createBtree (char *idxId, DataType keyType, int n){
 }
 
 /***************************************************************
- * Function Name: 
+ * Function Name: openBtree 
  * 
- * Description:
+ * Description: open btree file
  *
- * Parameters:
+ * Parameters: BTreeHandle **tree, char *idxId
  *
- * Return:
+ * Return: RC
  *
- * Author:
+ * Author: Xiaoliang Wu
  *
  * History:
  *      Date            Name                        Content
+ *      04/06/16        Xiaoliang Wu                Complete.
  *
 ***************************************************************/
 
 RC openBtree (BTreeHandle **tree, char *idxId){
+
+    DataType keyType;
+    int rootPage;
+    int nodeNum;
+    int entryNum;
+    int n;
+    BM_BufferPool  *bufferPool = MAKE_POOL();
+    SM_FileHandle *fHandle = (SM_FileHandle *)calloc(1, sizeof(SM_FileHandle));
+ 
+    char * metadata = (char *)calloc(PAGE_SIZE, sizeof(char));
+
+    openPageFile(idxId, fHandle);
+    initBufferPool(bufferPool, idxId, 10, RS_LRU, NULL);
+
+    readBlock(0, fHandle, metadata);
+
+    memcpy(&rootPage, metadata,sizeof(int));
+    memcpy(&nodeNum, metadata+sizeof(int),sizeof(int));
+    memcpy(&entryNum, metadata+2*sizeof(int),sizeof(int));
+    memcpy(&n, metadata+3*sizeof(int),sizeof(int));
+    memcpy(&keyType, metadata + 4*sizeof(int),sizeof(DataType));
+
+    *tree = (BTreeHandle *)calloc(1, sizeof(BTreeHandle));
+    
+    (*tree)->keyType = keyType;
+    (*tree)->rootPage = rootPage;
+    (*tree)->nodeNum = nodeNum;
+    (*tree)->entryNum = entryNum;
+    (*tree)->n = n;
+    (*tree)->bufferPool = bufferPool;
+    (*tree)->fileHandle = fHandle;
+    (*tree)->idxId = idxId;
+
+    free(metadata);
+
+    return RC_OK;
 }
 
 /***************************************************************
- * Function Name: 
+ * Function Name: closeBtree 
  * 
- * Description:
+ * Description: close btree
  *
- * Parameters:
+ * Parameters: BTreeHandle *tree)
  *
- * Return:
+ * Return: RC
  *
- * Author:
+ * Author: Xiaoliang Wu
  *
  * History:
  *      Date            Name                        Content
+ *      04/06/16        Xiaoliang Wu                Complete.
  *
 ***************************************************************/
 
 RC closeBtree (BTreeHandle *tree){
+
+    shutdownBufferPool(tree->bufferPool);
+    free(tree->bufferPool);
+    free(tree->fileHandle);
+    free(tree);
+    return RC_OK;
 }
 
 /***************************************************************
- * Function Name: 
+ * Function Name: deleteBtree 
  * 
- * Description:
+ * Description: delte btree file
  *
- * Parameters:
+ * Parameters: char *idxId
  *
- * Return:
+ * Return: RC
  *
- * Author:
+ * Author: Xiaoliang Wu
  *
  * History:
  *      Date            Name                        Content
+ *      04/06/16        Xiaoliang Wu                Complete.
  *
 ***************************************************************/
 
 RC deleteBtree (char *idxId){
+    return destroyPageFile(idxId);
 }
 
 // access information about a b-tree
