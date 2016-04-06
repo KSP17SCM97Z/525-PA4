@@ -59,22 +59,50 @@ RC shutdownIndexManager (){
 // create, destroy, open, and close an btree index
 
 /***************************************************************
- * Function Name: 
+ * Function Name: createBtree 
  * 
- * Description:
+ * Description: create a btree file
  *
- * Parameters:
+ * Parameters: char *idxId, DataType keyType, int n
  *
- * Return:
+ * Return: RC
  *
- * Author:
+ * Author: Xiaoliang Wu
  *
  * History:
  *      Date            Name                        Content
+ *      04/05/16        Xiaoliang Wu                Complete.
  *
 ***************************************************************/
 
 RC createBtree (char *idxId, DataType keyType, int n){
+    SM_FileHandle *fHandle = (SM_FileHandle *)calloc(1, sizeof(SM_FileHandle));
+    char *metadata = (char *)calloc(1, PAGE_SIZE);
+    char *read = (char *)malloc(PAGE_SIZE);
+
+    int rootPage;
+    int nodeNum;
+    int entryNum;
+
+    createPageFile(idxId);
+    openPageFile(idxId, fHandle);
+    ensureCapacity(2, fHandle);
+
+    rootPage = 1;
+    nodeNum = 0;
+    entryNum = 0;
+
+    memcpy(metadata, &rootPage, sizeof(int));
+    memcpy(metadata + sizeof(int), &nodeNum, sizeof(int));
+    memcpy(metadata + 2*sizeof(int), &entryNum, sizeof(int));
+    memcpy(metadata + 3*sizeof(int), &entryNum, sizeof(int));
+
+    writeBlock(0, fHandle, metadata);
+
+    free(fHandle);
+    free(metadata);
+
+    return RC_OK;
 }
 
 /***************************************************************
@@ -155,6 +183,7 @@ RC deleteBtree (char *idxId){
 RC getNumNodes (BTreeHandle *tree, int *result)
 {
 	*result=tree->nodeNum;
+    return RC_OK;
 }
 
 /***************************************************************
@@ -176,6 +205,7 @@ RC getNumNodes (BTreeHandle *tree, int *result)
 RC getNumEntries (BTreeHandle *tree, int *result)
 {
 	*result=tree->entryNum;
+    return RC_OK;
 }
 
 /***************************************************************
@@ -197,6 +227,7 @@ RC getNumEntries (BTreeHandle *tree, int *result)
 RC getKeyType (BTreeHandle *tree, DataType *result)
 {
 	*result=tree->keyType;
+    return RC_OK;
 }
 
 // index access

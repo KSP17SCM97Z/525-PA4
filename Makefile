@@ -1,4 +1,4 @@
-base = btree_mgr.o buffer_mgr.o buffer_mgr_stat.o dberror.o expr.o rm_serializer.o storage_mgr.o record_mgr.o
+base = btree_mgr.o buffer_mgr.o buffer_mgr_stat.o dberror.o storage_mgr.o expr.o rm_serializer.o record_mgr.o
 
 test_expr : $(base) test_expr.o
 	gcc -o test_expr $(base) test_expr.o
@@ -33,7 +33,7 @@ test_expr.o : test_expr.c
 	gcc -c test_expr.c -I .
 
 test_assign4_1.o : test_assign4_1.c
-	gcc -c test_assign3_1.c -I .
+	gcc -c test_assign4_1.c -I .
 
 record_mgr.o : record_mgr.c
 	gcc -c record_mgr.c -I .
