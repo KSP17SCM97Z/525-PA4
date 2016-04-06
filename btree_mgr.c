@@ -252,7 +252,7 @@ RC findKey (BTreeHandle *tree, Value *key, RID *result)
 	int n;
 
 	n=tree->rootPage;
-	BT_Node *node=(BT_Node*)calloc(1,sizeof(BT_Node));
+	BT_Node *node=NULL;
 	while(1)
 	{
 		getNode (tree,n, &node);
@@ -270,7 +270,7 @@ RC findKey (BTreeHandle *tree, Value *key, RID *result)
 				}
 			}
 			freeNode(node);
-			return RC_RM_RECORD_NOT_EXIST;
+			return RC_IM_KEY_NOT_FOUND;
 		}
 		else
 		{
@@ -332,60 +332,99 @@ RC deleteKey (BTreeHandle *tree, Value *key){
 }
 
 /***************************************************************
- * Function Name: 
+ * Function Name: openTreeScan 
  * 
- * Description:
+ * Description:initialize scan handle
  *
- * Parameters:
+ * Parameters:BTreeHandle *tree, BT_ScanHandle **handle
  *
- * Return:
+ * Return:RC
  *
- * Author:
+ * Author:lzp
  *
  * History:
  *      Date            Name                        Content
- *
+ *04/06/2016	liuzhipeng	complete this function
 ***************************************************************/
 
-RC openTreeScan (BTreeHandle *tree, BT_ScanHandle **handle){
+RC openTreeScan (BTreeHandle *tree, BT_ScanHandle **handle)
+{
+	*handle=(BT_ScanHandle*)calloc(1,sizeof(BT_ScanHandle));
+	(*handle) ->tree=tree;
+	int n;
+	BT_Node *node=NULL;
+	n=tree->rootPage;
+	 getNode (tree, n, &node);
+	 while(node->nodeType !=1)
+	 {
+	 	n=node->element->node;
+	 	getNode(tree,n,&node);
+	 }
+	 (*handle)->currentNode=node->current;
+	 (*handle)->currentPos=0;
+	 getNumEntries (tree, &n);
+	 (*handle)->count=n;
+	 freeNode(node);
+
+	 return RC_OK;
 }
 
 /***************************************************************
- * Function Name: 
+ * Function Name: nextEntry 
  * 
- * Description:
+ * Description:return the next sorted RID in *result
  *
- * Parameters:
+ * Parameters:BT_ScanHandle *handle, RID *result
  *
- * Return:
+ * Return:RC
  *
- * Author:
+ * Author:lzp
  *
  * History:
  *      Date            Name                        Content
- *
+ *04/06/2016	liuzhipeng	complete this function
 ***************************************************************/
 
-RC nextEntry (BT_ScanHandle *handle, RID *result){
+RC nextEntry (BT_ScanHandle *handle, RID *result)
+{
+	if(handle->count <= 0)
+		return RC_IM_NO_MORE_ENTRIES;
+	BT_Node *node=NULL;
+	getNode (handle->tree, handle->currentNode, &node);
+	result->page=(node->element+handle->currentPos)->id.page;
+	result->slot=(node->element+handle->currentPos)->id.slot;
+	handle->count--;
+	handle->currentPos=handle->currentPos+2;
+	if(handle->currentPos == node->size && handle->count!=0)
+	{
+		handle->currentNode=(node->element+handle->currentPos)->node;
+		handle->currentPos=0;
+	}
+	freeNode(node);
+	return RC_OK;	
 }
 
 /***************************************************************
- * Function Name: 
+ * Function Name: closeTreeScan 
  * 
- * Description:
+ * Description:close a scan handle
  *
- * Parameters:
+ * Parameters:BT_ScanHandle *handle
  *
- * Return:
+ * Return:RC
  *
- * Author:
+ * Author:lzp
  *
  * History:
  *      Date            Name                        Content
- *
+ *04/06/2016	liuzhipeng	complete this function
 ***************************************************************/
 
-RC closeTreeScan (BT_ScanHandle *handle){
+RC closeTreeScan (BT_ScanHandle *handle)
+{
+	free(handle);
+
+	return RC_OK;
 }
 
 // debug and test functions
