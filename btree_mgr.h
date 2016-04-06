@@ -12,6 +12,7 @@ typedef struct BTreeHandle {
   int rootPage;
   int nodeNum;
   int entryNum;
+  int n;
   BM_BufferPool  *bufferPool;
   SM_FileHandle *fileHandle;
   char *idxId;
