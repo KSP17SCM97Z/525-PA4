@@ -149,63 +149,89 @@ RC deleteBtree (char *idxId){
 // access information about a b-tree
 
 /***************************************************************
- * Function Name: 
+ * Function Name: getNumNodes
  * 
- * Description:
+ * Description:get this number of nodes in the tree and return it in *result
  *
- * Parameters:
+ * Parameters:BTreeHandle *tree, int *result
  *
- * Return:
+ * Return:RC
  *
- * Author:
+ * Author:lzp
  *
  * History:
  *      Date            Name                        Content
- *
+ *04/05/2016	liuzhipeng	complete this function
 ***************************************************************/
 
-RC getNumNodes (BTreeHandle *tree, int *result){
+RC getNumNodes (BTreeHandle *tree, int *result)
+{
+	*result=tree->nodeNum;
 }
 
 /***************************************************************
- * Function Name: 
+ * Function Name: getNumEntries
  * 
- * Description:
+ * Description:get the number of entries of the tree and return it in *reslut
  *
- * Parameters:
+ * Parameters:BTreeHandle *tree, int *result
  *
- * Return:
+ * Return:RC
  *
- * Author:
+ * Author:lzp
  *
  * History:
  *      Date            Name                        Content
- *
+ *04/05/2016	liuzhipeng	complete this function
 ***************************************************************/
 
-RC getNumEntries (BTreeHandle *tree, int *result){
+RC getNumEntries (BTreeHandle *tree, int *result)
+{
+	*result=tree->entryNum;
 }
 
 /***************************************************************
- * Function Name: 
+ * Function Name: getKeyType
  * 
- * Description:
+ * Description:get the key type of tree
  *
- * Parameters:
+ * Parameters:BTreeHandle *tree, DataType *result
  *
- * Return:
+ * Return:RC
  *
- * Author:
+ * Author:lzp
  *
  * History:
  *      Date            Name                        Content
- *
+ *04/052016	liuzhipeng	complete this function
 ***************************************************************/
 
-RC getKeyType (BTreeHandle *tree, DataType *result){
+RC getKeyType (BTreeHandle *tree, DataType *result)
+{
+	*result=tree->keyType;
 }
 
 // index access
+
+/***************************************************************
+ * Function Name: 
+ * 
+ * Description:
+ *
+ * Parameters:
+ *
+ * Return:
+ *
+ * Author:
+ *
+ * History:
+ *      Date            Name                        Content
+ *
+***************************************************************/
+RC findKey (BTreeHandle *tree, Value *key, RID *result)
+{
+
+}
 
 /***************************************************************
  * Function Name: 
@@ -321,4 +347,46 @@ RC closeTreeScan (BT_ScanHandle *handle){
 ***************************************************************/
 
 char *printTree (BTreeHandle *tree){
+}
+
+// addition part
+
+/***************************************************************
+ * Function Name: 
+ * 
+ * Description:
+ *
+ * Parameters:
+ *
+ * Return:
+ *
+ * Author:
+ *
+ * History:
+ *      Date            Name                        Content
+ *
+***************************************************************/
+RC getNode (BTreeHandle *tree, int nodeNum, BT_Node **node)
+{
+
+}
+
+/***************************************************************
+ * Function Name: 
+ * 
+ * Description:
+ *
+ * Parameters:
+ *
+ * Return:
+ *
+ * Author:
+ *
+ * History:
+ *      Date            Name                        Content
+ *
+***************************************************************/
+RC setNode (BTreeHandle *tree, int nodeNum, BT_Node *node)
+{
+
 }
