@@ -20,6 +20,9 @@ typedef struct BTreeHandle {
 
 typedef struct BT_ScanHandle {
   BTreeHandle *tree;
+  int currentNode;
+  int currentPos;
+  int count;
   void *mgmtData;
 } BT_ScanHandle;
 
