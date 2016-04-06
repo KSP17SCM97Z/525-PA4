@@ -222,9 +222,9 @@ RC findKey (BTreeHandle *tree, Value *key, RID *result)
 		if(node->nodeType)
 		{
 			int i;
-			for(i=1;i<2*tree->n;i=i+2)
+			for(i=1 ; i < node->size ; i=i+2)
 			{
-				if((node->element+i)->node==key->v.intV)
+				if((node->element+i)->node == key->v.intV)
 				{
 					result->page=(node->element+i-1)->id.page;
 					result->slot=(node->element+i-1)->id.slot;
@@ -238,13 +238,13 @@ RC findKey (BTreeHandle *tree, Value *key, RID *result)
 		else
 		{
 			int i;
-			if((node->element+1)->node>key->v.intV)
+			if((node->element+1)->node > key->v.intV)
 			{
 				n=node->element->node;
 			}
 			else
 			{
-				for(i=1;i<2*tree->n;i=i+2)
+				for(i=1 ; i<node->size ; i=i+2)
 				{
 					if((node->element+i)->node<=key->v.intV)
 					{
