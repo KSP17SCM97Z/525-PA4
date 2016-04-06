@@ -191,7 +191,7 @@ RC getNumEntries (BTreeHandle *tree, int *result)
  *
  * History:
  *      Date            Name                        Content
- *04/052016	liuzhipeng	complete this function
+ *04/05/2016	liuzhipeng	complete this function
 ***************************************************************/
 
 RC getKeyType (BTreeHandle *tree, DataType *result)
@@ -202,19 +202,19 @@ RC getKeyType (BTreeHandle *tree, DataType *result)
 // index access
 
 /***************************************************************
- * Function Name: 
+ * Function Name: findKey
  * 
- * Description:
+ * Description:find a specific value from the tree and return it in *result
  *
- * Parameters:
+ * Parameters:BTreeHandle *tree, Value *key, RID *result
  *
- * Return:
+ * Return:RC
  *
- * Author:
+ * Author:lzp
  *
  * History:
  *      Date            Name                        Content
- *
+ *04/05/2016	liuzhipeng	complete this function
 ***************************************************************/
 RC findKey (BTreeHandle *tree, Value *key, RID *result)
 {
