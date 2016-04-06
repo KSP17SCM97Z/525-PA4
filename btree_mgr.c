@@ -442,4 +442,3 @@ RC freeNode (BT_Node *node)
 	free(node);
 	return RC_OK;
 }
->>>>>>> 06cbe5fc1949d2e8f74086339b0eb75f44a9ee30
