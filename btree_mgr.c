@@ -49,24 +49,6 @@ RC initIndexManager (void *mgmtData){
 RC shutdownIndexManager (){
 }
 
-/***************************************************************
- * Function Name: 
- * 
- * Description:
- *
- * Parameters:
- *
- * Return:
- *
- * Author:
- *
- * History:
- *      Date            Name                        Content
- *
-***************************************************************/
-
-RC findKey (BTreeHandle *tree, Value *key, RID *result){
-}
 
 // create, destroy, open, and close an btree index
 
@@ -230,7 +212,48 @@ RC getKeyType (BTreeHandle *tree, DataType *result)
 ***************************************************************/
 RC findKey (BTreeHandle *tree, Value *key, RID *result)
 {
+	int n;
 
+	n=tree->rootPage;
+	BT_Node *node=(BT_Node*)calloc(1,sizeof(BT_Node));
+	while(1)
+	{
+		getNode (tree,n, &node);
+		if(node->nodeType)
+		{
+			int i;
+			for(i=1;i<2*tree->n;i=i+2)
+			{
+				if((node->element+i)->node==key->v.intV)
+				{
+					result->page=(node->element+i-1)->id.page;
+					result->slot=(node->element+i-1)->id.slot;
+					freeNode(node);
+					return RC_OK;
+				}
+			}
+			freeNode(node);
+			return RC_RM_RECORD_NOT_EXIST;
+		}
+		else
+		{
+			int i;
+			if((node->element+1)->node>key->v.intV)
+			{
+				n=node->element->node;
+			}
+			else
+			{
+				for(i=1;i<2*tree->n;i=i+2)
+				{
+					if((node->element+i)->node<=key->v.intV)
+					{
+						n=(node->element+i+1)->node;
+					}
+				}
+			}
+		}
+	}
 }
 
 /***************************************************************
@@ -386,7 +409,30 @@ RC getNode (BTreeHandle *tree, int nodeNum, BT_Node **node)
  *      Date            Name                        Content
  *
 ***************************************************************/
+
 RC setNode (BTreeHandle *tree, int nodeNum, BT_Node *node)
 {
 
+}
+
+/***************************************************************
+ * Function Name: freeNode
+ * 
+ * Description:free the memospace of Node struct
+ *
+ * Parameters:BT_Node *node
+ *
+ * Return:RC
+ *
+ * Author:lzp
+ *
+ * History:
+ *      Date            Name                        Content
+ *04/05/2016	liuzhipeng	complete this fuction
+***************************************************************/
+RC freeNode (BT_Node *node)
+{
+	free(node->element);
+	free(node);
+	return RC_OK;
 }

@@ -34,6 +34,7 @@ typedef struct BT_Node {
   int parent;
   int current;
   int size;
+  int nodeType;// add by liuzhipeng leafnode=1, none-leafnode=0;
   BT_Element *element;
 } BT_Node;
 
