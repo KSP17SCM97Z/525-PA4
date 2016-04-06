@@ -67,5 +67,6 @@ extern char *printTree (BTreeHandle *tree);
 // Add by Xincheng Yang 4/5/2016
 extern RC getNode (BTreeHandle *tree, int nodeNum, BT_Node **node);
 extern RC setNode (BTreeHandle *tree, int nodeNum, BT_Node *node);
+extern RC freeNode (BT_Node *node);
 
 #endif // BTREE_MGR_H
