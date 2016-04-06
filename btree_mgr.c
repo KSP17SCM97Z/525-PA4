@@ -221,7 +221,7 @@ RC getNumEntries (BTreeHandle *tree, int *result)
  *
  * History:
  *      Date            Name                        Content
- *04/052016	liuzhipeng	complete this function
+ *04/05/2016	liuzhipeng	complete this function
 ***************************************************************/
 
 RC getKeyType (BTreeHandle *tree, DataType *result)
@@ -233,19 +233,19 @@ RC getKeyType (BTreeHandle *tree, DataType *result)
 // index access
 
 /***************************************************************
- * Function Name: 
+ * Function Name: findKey
  * 
- * Description:
+ * Description:find a specific value from the tree and return it in *result
  *
- * Parameters:
+ * Parameters:BTreeHandle *tree, Value *key, RID *result
  *
- * Return:
+ * Return:RC
  *
- * Author:
+ * Author:lzp
  *
  * History:
  *      Date            Name                        Content
- *
+ *04/05/2016	liuzhipeng	complete this function
 ***************************************************************/
 RC findKey (BTreeHandle *tree, Value *key, RID *result)
 {
@@ -259,9 +259,9 @@ RC findKey (BTreeHandle *tree, Value *key, RID *result)
 		if(node->nodeType)
 		{
 			int i;
-			for(i=1;i<2*tree->n;i=i+2)
+			for(i=1 ; i < node->size ; i=i+2)
 			{
-				if((node->element+i)->node==key->v.intV)
+				if((node->element+i)->node == key->v.intV)
 				{
 					result->page=(node->element+i-1)->id.page;
 					result->slot=(node->element+i-1)->id.slot;
@@ -275,13 +275,13 @@ RC findKey (BTreeHandle *tree, Value *key, RID *result)
 		else
 		{
 			int i;
-			if((node->element+1)->node>key->v.intV)
+			if((node->element+1)->node > key->v.intV)
 			{
 				n=node->element->node;
 			}
 			else
 			{
-				for(i=1;i<2*tree->n;i=i+2)
+				for(i=1 ; i<node->size ; i=i+2)
 				{
 					if((node->element+i)->node<=key->v.intV)
 					{
