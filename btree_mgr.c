@@ -12,41 +12,47 @@
 // init and shutdown index manager
 
 /***************************************************************
- * Function Name: 
+ * Function Name: initIndexManager 
  * 
- * Description:
+ * Description: initial index manager
  *
- * Parameters:
+ * Parameters: void *mgmtData
  *
- * Return:
+ * Return: RC
  *
- * Author:
+ * Author: Xiaoliang Wu
  *
  * History:
  *      Date            Name                        Content
+ *      04/05/16        Xiaoliang Wu                Complete.
  *
 ***************************************************************/
 
 RC initIndexManager (void *mgmtData){
+    printf("------------------------ Initial Index Manager ------------------------ \n");
+    return RC_OK;
 }
 
 /***************************************************************
- * Function Name: 
+ * Function Name: shutdownIndexManager 
  * 
- * Description:
+ * Description: shutdown index manager
  *
  * Parameters:
  *
- * Return:
+ * Return: RC
  *
- * Author:
+ * Author: Xiaoliang Wu
  *
  * History:
  *      Date            Name                        Content
+ *      04/05/16        Xiaoliang Wu                Complete.
  *
 ***************************************************************/
 
 RC shutdownIndexManager (){
+    printf("------------------------ Shutdown Index Manager ------------------------ \n");
+    return RC_OK;
 }
 
 
