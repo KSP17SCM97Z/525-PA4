@@ -31,6 +31,7 @@ typedef int RC;
 #define RC_IM_KEY_ALREADY_EXISTS 301
 #define RC_IM_N_TO_LAGE 302
 #define RC_IM_NO_MORE_ENTRIES 303
+#define RC_IM_NODE_NOT_EXIST 304	//add by Xincheng Yang
 
 /* holder for error messages */
 extern char *RC_message;
