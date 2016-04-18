@@ -72,6 +72,7 @@ RC shutdownIndexManager (){
  * History:
  *      Date            Name                        Content
  *      04/05/16        Xiaoliang Wu                Complete.
+ *      04/09/16        Xincheng Yang               Modified.
  *
 ***************************************************************/
 
@@ -426,8 +427,7 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid){
                 }
             }
             
-            // If node overflow, then split into 2 nodes.
-            if(node->size >= 2*(tree->n+1)){       
+            if(node->size >= 2*(tree->n+1)){       // If node overflow, then split into 2 nodes.
                 newnode = (BT_Node *)malloc(sizeof(BT_Node));
                 newnode->isValid = 1;
                 newnode->size = node->size/4*2 - node->size%2;
@@ -444,7 +444,7 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid){
                 (*(node->element+node->size-1)).node =  newnode->current;   //Point to new node.
                 
                 tree->nodeNum++; 
-                if(node->parent == -1){     //Create new root
+                if(node->parent == -1){     // Create new root if corrent node do not have parent
                     left = node->current;      
                     root = (BT_Node *)calloc(1, sizeof(BT_Node));
                     root->isValid = 1;
@@ -467,7 +467,7 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid){
                     setNode(tree, root->current, root);
                     freeNode(root);
                     break;
-                } else {
+                } else {                    // Insert into root if corrent node have parent
                     setNode(tree, node->current, node);
                     setNode(tree, newnode->current, newnode);
                     if(node->nodeType == 1){
@@ -480,7 +480,7 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid){
                     getNode(tree, node->parent, &node);
                 }
                 freeNode(newnode);
-            } else {
+            } else {                        // If node not overflow, then save node and break loop
                 setNode(tree, node->current, node);
                 break;
             }
@@ -538,13 +538,14 @@ RC deleteKey (BTreeHandle *tree, Value *key){
         return RC_IM_KEY_NOT_FOUND;
     }
     
+    // Delete key
     for(;i<node->size;i+=2){
         (*(node->element+i-1)).id = (*(node->element+i+1)).id;
         (*(node->element+i)).node = (*(node->element+i+2)).node;
     }
     node->size-=2;
     tree->entryNum--;
-    while(node->size <2 && node->current!=0){
+    while(node->size <2 && node->current!=0){       // Remove from parent
         child = node;
         child->isValid = 0;
 
