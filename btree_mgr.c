@@ -430,7 +430,7 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid){
             if(node->size >= 2*(tree->n+1)){       // If node overflow, then split into 2 nodes.
                 newnode = (BT_Node *)malloc(sizeof(BT_Node));
                 newnode->isValid = 1;
-                newnode->size = node->size/4*2 - node->size%2;
+                newnode->size = node->size/4*2 + node->size%2;
                 newnode->current = tree->fileHandle->totalNumPages;
                 appendEmptyBlock(tree->fileHandle);
                 newnode->nodeType = node->nodeType;
