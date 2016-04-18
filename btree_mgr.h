@@ -34,6 +34,7 @@ typedef union BT_Element {
 
 // Add by Xincheng Yang 4/5/2016
 typedef struct BT_Node {
+  int isValid;
   int parent;
   int current;
   int size;
@@ -72,5 +73,6 @@ extern char *printTree (BTreeHandle *tree);
 extern RC getNode (BTreeHandle *tree, int nodeNum, BT_Node **node);
 extern RC setNode (BTreeHandle *tree, int nodeNum, BT_Node *node);
 extern RC freeNode (BT_Node *node);
+extern RC printNode (BT_Node *node);
 
 #endif // BTREE_MGR_H

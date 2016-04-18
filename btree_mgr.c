@@ -85,9 +85,9 @@ RC createBtree (char *idxId, DataType keyType, int n){
 
     createPageFile(idxId);
     openPageFile(idxId, fHandle);
-    ensureCapacity(2, fHandle);
+    ensureCapacity(1, fHandle);
 
-    rootPage = 1;
+    rootPage = -1;
     nodeNum = 0;
     entryNum = 0;
 
@@ -347,41 +347,237 @@ RC findKey (BTreeHandle *tree, Value *key, RID *result)
 }
 
 /***************************************************************
- * Function Name: 
+ * Function Name: insertKey 
  * 
- * Description:
+ * Description:insert key
  *
- * Parameters:
+ * Parameters:BTreeHandle *tree, Value *key, RID rid
  *
- * Return:
+ * Return:RC
  *
- * Author:
+ * Author:Xincheng Yang
  *
  * History:
  *      Date            Name                        Content
- *
+ *  04/10/2016          Xincheng Yang             finish this function
+ *  04/14/2016          Xincheng Yang             modified
 ***************************************************************/
 
 RC insertKey (BTreeHandle *tree, Value *key, RID rid){
+    BT_Node *node, *newnode, *root;
+    BT_Element *element;
+    int i, intKey, left, right, k=0;
+    
+    // If root does not exist, create root.
+    if(tree->entryNum==0 || tree->rootPage==-1 || getNode(tree, tree->rootPage, &node) != RC_OK){   
+        node = (BT_Node *)calloc(1, sizeof(BT_Node));
+        node->isValid = 1;
+        node->parent = -1;
+        node->current = tree->fileHandle->totalNumPages;
+        node->nodeType = 1;
+        node->size = 2;
+        node->element = (BT_Element *)malloc(sizeof(BT_Element) * node->size);
+        (*(node->element)).id = rid;
+        (*(node->element+1)).node = key->v.intV;
+        tree->nodeNum++;
+        tree->rootPage = node->current;
+        setNode(tree, node->current, node);
+    } else {
+        // Find the target node to insert
+        while(node->nodeType == 0){     // While not leaf
+            for(i=1; ; i+=2){
+                if((*(node->element+i)).node > key->v.intV || i>=node->size){
+                    k = (*(node->element+i-1)).node;
+                    freeNode(node);
+                    node = (BT_Node *)malloc(sizeof(BT_Node));
+                    getNode(tree, k, &node);
+                    break;
+                }
+            }
+        }
+        intKey = key->v.intV;
+        do {
+            // Insert rid and key into node
+            for(i=1; ; i+=2){
+                if((*(node->element+i)).node > intKey || i>=node->size){
+                    if((*(node->element+i-2)).node == key->v.intV){
+                        freeNode(node);
+                        return RC_IM_KEY_ALREADY_EXISTS;
+                    }
+                    element = (BT_Element *)calloc(node->size + 2, sizeof(BT_Element));
+        
+                    if(node->nodeType == 0){        // if not leaf.
+                        memcpy(element, node->element, sizeof(BT_Element) * i-1);
+                        (*(element+i-1)).node = left;
+                        (*(element+i)).node = intKey;
+                        (*(element+i+1)).node = right;
+                        memcpy(element + i+2, node->element+ i, sizeof(BT_Element) * (node->size+2-i));
+                    } else {                        // if leaf node
+                        memcpy(element, node->element, sizeof(BT_Element) * (i-1));
+                        (*(element+i-1)).id = rid;
+                        (*(element+i)).node = intKey;
+                        memcpy(element + i+1, node->element+ i-1, sizeof(BT_Element) * (node->size+1-i));
+                    }
+                    
+                    free(node->element);
+                    node->size+=2;
+                    node->element = element;
+                    break;
+                }
+            }
+            
+            // If node overflow, then split into 2 nodes.
+            if(node->size >= 2*(tree->n+1)){       
+                newnode = (BT_Node *)malloc(sizeof(BT_Node));
+                newnode->isValid = 1;
+                newnode->size = node->size/4*2 - node->size%2;
+                newnode->current = tree->fileHandle->totalNumPages;
+                appendEmptyBlock(tree->fileHandle);
+                newnode->nodeType = node->nodeType;
+                newnode->parent = node->parent;
+                newnode->element = (BT_Element *)calloc(newnode->size, sizeof(BT_Element));
+                memcpy(newnode->element, node->element + node->size - newnode->size, 
+                    sizeof(BT_Element)*newnode->size);
+   
+                node->size = (node->size/2 - node->size/4)*2 + 1;
+                node->element = realloc(node->element, node->size * sizeof(BT_Element));
+                (*(node->element+node->size-1)).node =  newnode->current;   //Point to new node.
+                
+                tree->nodeNum++; 
+                if(node->parent == -1){     //Create new root
+                    left = node->current;      
+                    root = (BT_Node *)calloc(1, sizeof(BT_Node));
+                    root->isValid = 1;
+                    root->parent = -1;
+                    root->current = tree->fileHandle->totalNumPages;
+                    root->nodeType = 0;
+                    root->size = 3;
+                    root->element = (BT_Element *)malloc(sizeof(BT_Element) * root->size);
+                    (*(root->element)).node = left;
+                    (*(root->element+1)).node = (*(newnode->element+1)).node;
+                    (*(root->element+2)).node = newnode->current;
+                    
+                    tree->rootPage = root->current;
+                    tree->nodeNum++;
+                    node->parent = root->current;
+                    newnode->parent = root->current;
+                    
+                    setNode(tree, node->current, node);
+                    setNode(tree, newnode->current, newnode);
+                    setNode(tree, root->current, root);
+                    freeNode(root);
+                    break;
+                } else {
+                    setNode(tree, node->current, node);
+                    setNode(tree, newnode->current, newnode);
+                    if(node->nodeType == 1){
+                        intKey = (*(newnode->element+1)).node;
+                    } else {
+                        intKey = (*(node->element+node->size-1)).node;
+                    }
+                    left = node->current;      
+                    right = newnode->current;
+                    getNode(tree, node->parent, &node);
+                }
+                freeNode(newnode);
+            } else {
+                setNode(tree, node->current, node);
+                break;
+            }
+        } while (true);
+    }
+    
+    freeNode(node);
+    tree->entryNum++;
+    return RC_OK;
 }
 
 /***************************************************************
- * Function Name: 
+ * Function Name: deleteKey 
  * 
- * Description:
+ * Description:delete key
  *
- * Parameters:
+ * Parameters:BTreeHandle *tree, Value *key
  *
- * Return:
+ * Return:RC
  *
- * Author:
+ * Author:Xincheng Yang
  *
  * History:
  *      Date            Name                        Content
- *
+ *  04/17/2016          Xincheng Yang             finish this function
 ***************************************************************/
 
 RC deleteKey (BTreeHandle *tree, Value *key){
+    int i;
+    BT_Node *node, *child, *sibling;
+    
+    if(tree->rootPage==-1 || getNode(tree, tree->rootPage, &node) != RC_OK){ 
+        freeNode(node);
+        return RC_IM_KEY_NOT_FOUND;
+    }
+    
+    // Find the node
+    while(node->nodeType == 0){     // While not leaf
+        for(i=1; ; i+=2){
+            if((*(node->element+i)).node > key->v.intV || i>=node->size){
+                getNode(tree, (*(node->element+i-1)).node, &node);
+                break;
+            }
+        }
+    }
+    // Find the key to delete
+    for(i=1; i<node->size; i+=2){
+        if((*(node->element+i)).node > key->v.intV){
+            break;
+        }
+    }
+    i-=2;
+    if((*(node->element+i)).node != key->v.intV){       // If key do not exist
+        freeNode(node);
+        return RC_IM_KEY_NOT_FOUND;
+    }
+    
+    for(;i<node->size;i+=2){
+        (*(node->element+i-1)).id = (*(node->element+i+1)).id;
+        (*(node->element+i)).node = (*(node->element+i+2)).node;
+    }
+    node->size-=2;
+    tree->entryNum--;
+    while(node->size <2 && node->current!=0){
+        child = node;
+        child->isValid = 0;
+
+        getNode(tree, node->parent, &node);
+        for(i=0; i<node->size; i+=2){
+            if((*(node->element+i)).node == child->current){
+                break;
+            }
+        }
+        if(i == 0){
+            for(;i+2<node->size;i++){
+                (*(node->element+i)).node = (*(node->element+i+2)).node;
+            }
+        } else {
+            i--;
+            if(child->size == 1 && child->nodeType == 1){       // Sibling point to next
+                getNode(tree, (*(node->element+i-1)).node, &sibling);
+                (*(node->element+sibling->size-1)).node = (*child->element).node;
+                setNode(tree, sibling->current, sibling);
+                freeNode(sibling);
+            }
+            for(;i+2<node->size;i++){
+                (*(node->element+i)).node = (*(node->element+i+2)).node;
+            }
+        }
+        node->size-=2;
+        setNode(tree, child->current, child); 
+        freeNode(child);
+        tree->nodeNum--;
+    } 
+    setNode(tree, node->current, node);
+    freeNode(node);
+    return RC_OK;
 }
 
 /***************************************************************
@@ -483,65 +679,170 @@ RC closeTreeScan (BT_ScanHandle *handle)
 // debug and test functions
 
 /***************************************************************
- * Function Name: 
+ * Function Name: printNode 
  * 
- * Description:
+ * Description:print node
  *
- * Parameters:
+ * Parameters:BT_Node *node
  *
- * Return:
+ * Return: RC
  *
- * Author:
+ * Author:Xincheng Yang
  *
  * History:
  *      Date            Name                        Content
- *
+ *  04/10/2016          Xincheng Yang             finish this function
 ***************************************************************/
+RC printNode(BT_Node *node){
+    int j=0;
+    printf("Node(%d):", node->current);
+    if(node->nodeType == 0){
+        for(j=0; j<node->size; j++){
+            printf("%d ", (*(node->element+j)).node);
+        }
+        printf("\n");
+    } else {
+        for(j=0; j<node->size;j++){
+            if(j%2 == 0 && j!=node->size-1){
+                printf("%d.%d ", (*(node->element+j)).id.page, (*(node->element+j)).id.slot);
+            } else {
+                printf("%d ", (*(node->element+j)).node);
+            }
+        }
+        printf("\n");
+    }
+    return RC_OK;
+}
 
+/***************************************************************
+ * Function Name: printTree 
+ * 
+ * Description:print tree
+ *
+ * Parameters:BTreeHandle *tree
+ *
+ * Return: RC
+ *
+ * Author:Xincheng Yang
+ *
+ * History:
+ *      Date            Name                        Content
+ *  04/9/2016          Xincheng Yang             finish this function
+***************************************************************/
 char *printTree (BTreeHandle *tree){
+    BT_Node *node;
+    int i=0, j, size=1, arr[100];
+    
+    if(tree->rootPage == -1){
+        return "Root not exist";
+    }
+    
+    arr[0] = tree->rootPage;
+    while(i!=size){
+        getNode(tree, arr[i], &node);
+        printf("(%d)[", arr[i]);
+        if(node->nodeType == 0){
+            for(j=0; j<node->size; j++){
+                printf("%d ", (*(node->element+j)).node);
+                if(j%2 == 0){
+                    arr[size] = (*(node->element+j)).node;
+                    size++;
+                }
+            }
+        } else {
+            for(j=0; j<node->size;j++){
+                if(j%2 == 0 && j!=node->size-1){
+                    printf("%d.%d ", (*(node->element+j)).id.page, (*(node->element+j)).id.slot);
+                } else {
+                    printf("%d ", (*(node->element+j)).node);
+                }
+            }
+        }
+        printf("]\n");
+        i++;
+        freeNode(node);
+    }
 }
 
 // addition part
 
 /***************************************************************
- * Function Name: 
+ * Function Name: getNode 
  * 
- * Description:
+ * Description:get node from tree
  *
- * Parameters:
+ * Parameters:BTreeHandle *tree, int nodeNum, BT_Node **node
  *
- * Return:
+ * Return: RC
  *
- * Author:
+ * Author:Xincheng Yang
  *
  * History:
  *      Date            Name                        Content
- *
+ *  04/9/2016          Xincheng Yang             finish this function
 ***************************************************************/
 RC getNode (BTreeHandle *tree, int nodeNum, BT_Node **node)
 {
-
+    BM_PageHandle *pg = (BM_PageHandle *)calloc(1, sizeof(BM_PageHandle));
+    RC rv = RC_OK;
+    
+    *node = (BT_Node *)calloc(1, sizeof(BT_Node));
+    if((rv = pinPage(tree->bufferPool, pg, nodeNum)) == RC_OK){
+        memcpy(&(*node)->isValid, pg->data, sizeof(int));
+        if((*node)->isValid == 0){
+            unpinPage(tree->bufferPool, pg);
+            rv = RC_IM_NODE_NOT_EXIST;
+        } else {
+            memcpy(&(*node)->parent, pg->data + sizeof(int), sizeof(int));
+            memcpy(&(*node)->current, pg->data + 2*sizeof(int) , sizeof(int));
+            memcpy(&(*node)->size, pg->data + 3*sizeof(int), sizeof(int));
+            memcpy(&(*node)->nodeType, pg->data + 4*sizeof(int), sizeof(int));
+            (*node)->element = (BT_Element *)malloc(sizeof(BT_Element) * (*node)->size);
+            memcpy((*node)->element, pg->data + 5*sizeof(int), sizeof(BT_Element) * (*node)->size);
+            rv = unpinPage(tree->bufferPool, pg);
+        }
+    }
+    
+    free(pg);
+    return rv;
 }
 
 /***************************************************************
- * Function Name: 
+ * Function Name: setNode 
  * 
- * Description:
+ * Description:set node into tree
  *
- * Parameters:
+ * Parameters:BTreeHandle *tree, int nodeNum, BT_Node *node
  *
- * Return:
+ * Return: RC
  *
- * Author:
+ * Author:Xincheng Yang
  *
  * History:
  *      Date            Name                        Content
- *
+ *  04/9/2016          Xincheng Yang             finish this function
 ***************************************************************/
 
 RC setNode (BTreeHandle *tree, int nodeNum, BT_Node *node)
 {
-
+    BM_PageHandle *pg = (BM_PageHandle *)malloc(sizeof(BM_PageHandle));
+    RC rv = RC_OK;
+    
+    if( (rv = ensureCapacity(nodeNum+1, tree->fileHandle)) == RC_OK 
+        && (rv = pinPage(tree->bufferPool, pg, nodeNum)) == RC_OK){
+        memcpy(pg->data, &node->isValid, sizeof(int));
+        memcpy(pg->data + sizeof(int), &node->parent, sizeof(int));
+        memcpy(pg->data + 2*sizeof(int), &node->current, sizeof(int));
+        memcpy(pg->data + 3*sizeof(int), &node->size, sizeof(int));
+        memcpy(pg->data + 4*sizeof(int), &node->nodeType, sizeof(int));
+        memcpy(pg->data + 5*sizeof(int), node->element, sizeof(BT_Element) * node->size);
+        
+        markDirty(tree->bufferPool, pg);
+        rv = unpinPage(tree->bufferPool, pg);
+    }
+    
+    free(pg);
+    return rv;
 }
 
 /***************************************************************
@@ -561,7 +862,9 @@ RC setNode (BTreeHandle *tree, int nodeNum, BT_Node *node)
 ***************************************************************/
 RC freeNode (BT_Node *node)
 {
-	free(node->element);
+    if(node->element != NULL){
+        free(node->element);
+    }
 	free(node);
 	return RC_OK;
 }
