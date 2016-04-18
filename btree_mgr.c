@@ -645,7 +645,7 @@ RC nextEntry (BT_ScanHandle *handle, RID *result)
 	result->slot=(node->element+handle->currentPos)->id.slot;
 	handle->count--;
 	handle->currentPos=handle->currentPos+2;
-	if(handle->currentPos == node->size && handle->count!=0)
+	if(handle->currentPos == node->size -1 && handle->count!=0)
 	{
 		handle->currentNode=(node->element+handle->currentPos)->node;
 		handle->currentPos=0;
