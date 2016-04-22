@@ -405,7 +405,6 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid){
                         return RC_IM_KEY_ALREADY_EXISTS;
                     }
                     if(node->nodeType == 0){        // if not leaf.
-                        printNode(node);
                         memcpy(element, node->element, sizeof(BT_Element) * (i-1));
                         (*(element+i-1)).node = left;
                         (*(element+i)).node = intKey;
@@ -840,7 +839,6 @@ RC setNode (BTreeHandle *tree, int nodeNum, BT_Node *node)
     
     if( (rv = ensureCapacity(nodeNum+1, tree->fileHandle)) == RC_OK 
         && (rv = pinPage(tree->bufferPool, pg, nodeNum)) == RC_OK){
-        printf("[SetNode]Set node 1\n"); 
         memcpy(pg->data, &node->isValid, sizeof(int));
         memcpy(pg->data + sizeof(int), &node->parent, sizeof(int));
         memcpy(pg->data + 2*sizeof(int), &node->current, sizeof(int));

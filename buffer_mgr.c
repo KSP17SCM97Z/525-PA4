@@ -164,7 +164,6 @@ RC forceFlushPool(BM_BufferPool *const bm) {
 
     for (i = 0; i < bm->numPages; ++i) {
         if (*(dirtyFlags + i)) {
-//printf("%s\n",*(dirtyFlags)?"true":"false");
             if (*(fixCounts + i)) {
                 continue;
             } else {
