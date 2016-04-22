@@ -1,0 +1,463 @@
+=====================================================================================
+=                   525 Programming Assignment 2 README file                        = 
+=====================================================================================
+                    1. Personnel information
+
+  xwu64@hawk.iit.edu      20354020    Xiaoliang Wu (representative)
+  zliu92@hawk.iit.edu     20355209    Zhipeng Liu
+  xyang76@hawk.iit.edu    20352628    Xincheng Yang
+  ctu5@hawk.iit.hawk      20352609    Chuanwei Tu
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    2. File list 
+
+  - btree_mgr.c
+  - btree_mgr.h
+  - buffer_mgr.c
+  - buffer_mgr.h
+  - buffer_mgr_stat.c
+  - buffer_mgr_stat.h
+  - dberror.c
+  - dberror.h
+  - dt.h
+  - expr.c
+  - expr.h
+  - Makefile
+  - README
+  - record_mgr.c
+  - record_mgr.h
+  - rm_serializer.c
+  - storage_mgr.c
+  - storage_mgr.h
+  - tables.h
+  - test_assign4_1.c
+  - test_expr.c
+  - test_helper.h
+  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    3. Milestone
+
+  2016/04/21 Complete project.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    4. Installation instruction  
+  using test_expr.c test:
+    $ make test_expr
+    $ ./test_expr
+
+  using test_assign4_1.c test:
+    $ make test
+    $ ./test
+
+  after test, use clean to delete files except source code.
+    $ make clean
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    5. Function descriptions: of all additional functions  
+
+
+/***************************************************************
+ * Function Name: initIndexManager 
+ * 
+ * Description: initial index manager
+ *
+ * Parameters: void *mgmtData
+ *
+ * Return: RC
+ *
+ * Author: Xiaoliang Wu
+ *
+ * History:
+ *      Date            Name                        Content
+ *      04/05/16        Xiaoliang Wu                Complete.
+ *
+***************************************************************/
+
+/***************************************************************
+ * Function Name: shutdownIndexManager 
+ * 
+ * Description: shutdown index manager
+ *
+ * Parameters:
+ *
+ * Return: RC
+ *
+ * Author: Xiaoliang Wu
+ *
+ * History:
+ *      Date            Name                        Content
+ *      04/05/16        Xiaoliang Wu                Complete.
+ *
+***************************************************************/
+
+/***************************************************************
+ * Function Name: createBtree 
+ * 
+ * Description: create a btree file
+ *
+ * Parameters: char *idxId, DataType keyType, int n
+ *
+ * Return: RC
+ *
+ * Author: Xiaoliang Wu
+ *
+ * History:
+ *      Date            Name                        Content
+ *      04/05/16        Xiaoliang Wu                Complete.
+ *      04/09/16        Xincheng Yang               Modified.
+ *
+
+/***************************************************************
+ * Function Name: openBtree 
+ * 
+ * Description: open btree file
+ *
+ * Parameters: BTreeHandle **tree, char *idxId
+ *
+ * Return: RC
+ *
+ * Author: Xiaoliang Wu
+ *
+ * History:
+ *      Date            Name                        Content
+ *      04/06/16        Xiaoliang Wu                Complete.
+ *
+***************************************************************/
+
+/***************************************************************
+ * Function Name: closeBtree 
+ * 
+ * Description: close btree
+ *
+ * Parameters: BTreeHandle *tree)
+ *
+ * Return: RC
+ *
+ * Author: Xiaoliang Wu
+ *
+ * History:
+ *      Date            Name                        Content
+ *      04/06/16        Xiaoliang Wu                Complete.
+ *
+***************************************************************/
+
+/***************************************************************
+ * Function Name: deleteBtree 
+ * 
+ * Description: delte btree file
+ *
+ * Parameters: char *idxId
+ *
+ * Return: RC
+ *
+ * Author: Xiaoliang Wu
+ *
+ * History:
+ *      Date            Name                        Content
+ *      04/06/16        Xiaoliang Wu                Complete.
+ *
+***************************************************************/
+
+/***************************************************************
+ * Function Name: getNumNodes
+ * 
+ * Description:get this number of nodes in the tree and return it in *result
+ *
+ * Parameters:BTreeHandle *tree, int *result
+ *
+ * Return:RC
+ *
+ * Author:lzp
+ *
+ * History:
+ *      Date            Name                        Content
+ *04/05/2016	liuzhipeng	complete this function
+***************************************************************/
+
+
+/***************************************************************
+ * Function Name: getNumEntries
+ * 
+ * Description:get the number of entries of the tree and return it in *reslut
+ *
+ * Parameters:BTreeHandle *tree, int *result
+ *
+ * Return:RC
+ *
+ * Author:lzp
+ *
+ * History:
+ *      Date            Name                        Content
+ *04/05/2016	liuzhipeng	complete this function
+***************************************************************/
+
+
+/***************************************************************
+ * Function Name: getKeyType
+ * 
+ * Description:get the key type of tree
+ *
+ * Parameters:BTreeHandle *tree, DataType *result
+ *
+ * Return:RC
+ *
+ * Author:lzp
+ *
+ * History:
+ *      Date            Name                        Content
+ *04/05/2016	liuzhipeng	complete this function
+***************************************************************/
+
+
+/***************************************************************
+ * Function Name: findKey
+ * 
+ * Description:find a specific value from the tree and return it in *result
+ *
+ * Parameters:BTreeHandle *tree, Value *key, RID *result
+ *
+ * Return:RC
+ *
+ * Author:lzp
+ *
+ * History:
+ *      Date            Name                        Content
+ *04/05/2016	liuzhipeng	complete this function
+***************************************************************/
+
+/***************************************************************
+ * Function Name: insertKey 
+ * 
+ * Description:insert key
+ *
+ * Parameters:BTreeHandle *tree, Value *key, RID rid
+ *
+ * Return:RC
+ *
+ * Author:Xincheng Yang
+ *
+ * History:
+ *      Date            Name                        Content
+ *  04/10/2016          Xincheng Yang             finish this function
+ *  04/14/2016          Xincheng Yang             modified
+***************************************************************/
+
+/***************************************************************
+ * Function Name: deleteKey 
+ * 
+ * Description:delete key
+ *
+ * Parameters:BTreeHandle *tree, Value *key
+ *
+ * Return:RC
+ *
+ * Author:Xincheng Yang
+ *
+ * History:
+ *      Date            Name                        Content
+ *  04/17/2016          Xincheng Yang             finish this function
+***************************************************************/
+
+
+/***************************************************************
+ * Function Name: openTreeScan 
+ * 
+ * Description:initialize scan handle
+ *
+ * Parameters:BTreeHandle *tree, BT_ScanHandle **handle
+ *
+ * Return:RC
+ *
+ * Author:lzp
+ *
+ * History:
+ *      Date            Name                        Content
+ *04/06/2016	liuzhipeng	complete this function
+***************************************************************/
+
+
+/***************************************************************
+ * Function Name: nextEntry 
+ * 
+ * Description:return the next sorted RID in *result
+ *
+ * Parameters:BT_ScanHandle *handle, RID *result
+ *
+ * Return:RC
+ *
+ * Author:lzp
+ *
+ * History:
+ *      Date            Name                        Content
+ *04/06/2016	liuzhipeng	complete this function
+***************************************************************/
+
+
+/***************************************************************
+ * Function Name: closeTreeScan 
+ * 
+ * Description:close a scan handle
+ *
+ * Parameters:BT_ScanHandle *handle
+ *
+ * Return:RC
+ *
+ * Author:lzp
+ *
+ * History:
+ *      Date            Name                        Content
+ *04/06/2016	liuzhipeng	complete this function
+***************************************************************/
+
+
+/***************************************************************
+ * Function Name: printNode 
+ * 
+ * Description:print node
+ *
+ * Parameters:BT_Node *node
+ *
+ * Return: RC
+ *
+ * Author:Xincheng Yang
+ *
+ * History:
+ *      Date            Name                        Content
+ *  04/10/2016          Xincheng Yang             finish this function
+***************************************************************/
+
+/***************************************************************
+ * Function Name: printTree 
+ * 
+ * Description:print tree
+ *
+ * Parameters:BTreeHandle *tree
+ *
+ * Return: RC
+ *
+ * Author:Xincheng Yang
+ *
+ * History:
+ *      Date            Name                        Content
+ *  04/9/2016          Xincheng Yang             finish this function
+***************************************************************/
+
+/***************************************************************
+ * Function Name: getNode 
+ * 
+ * Description:get node from tree
+ *
+ * Parameters:BTreeHandle *tree, int nodeNum, BT_Node **node
+ *
+ * Return: RC
+ *
+ * Author:Xincheng Yang
+ *
+ * History:
+ *      Date            Name                        Content
+ *  04/9/2016          Xincheng Yang             finish this function
+***************************************************************/
+
+/***************************************************************
+ * Function Name: setNode 
+ * 
+ * Description:set node into tree
+ *
+ * Parameters:BTreeHandle *tree, int nodeNum, BT_Node *node
+ *
+ * Return: RC
+ *
+ * Author:Xincheng Yang
+ *
+ * History:
+ *      Date            Name                        Content
+ *  04/9/2016          Xincheng Yang             finish this function
+***************************************************************/
+
+/***************************************************************
+ * Function Name: freeNode
+ * 
+ * Description:free the memospace of Node struct
+ *
+ * Parameters:BT_Node *node
+ *
+ * Return:RC
+ *
+ * Author:lzp
+ *
+ * History:
+ *      Date            Name                        Content
+ *04/05/2016	liuzhipeng	complete this fuction
+***************************************************************/
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    6. Additional error codes: of all additional error codes  
+
+RC_IM_NODE_NOT_EXIST 304
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    7. Data structure: main data structure used
+
+// structure for accessing btrees
+typedef struct BTreeHandle {
+  DataType keyType;
+  int rootPage;
+  int nodeNum;
+  int entryNum;
+  int n;
+  BM_BufferPool  *bufferPool;
+  SM_FileHandle *fileHandle;
+  char *idxId;
+} BTreeHandle;
+
+typedef struct BT_ScanHandle {
+  BTreeHandle *tree;
+  int currentNode;
+  int currentPos;
+  int count;
+  void *mgmtData;
+} BT_ScanHandle;
+
+// Add by Xincheng Yang 4/5/2016
+typedef union BT_Element {
+  int node;
+  RID id;
+} BT_Element;
+
+// Add by Xincheng Yang 4/5/2016
+typedef struct BT_Node {
+  int isValid;
+  int parent;
+  int current;
+  int size;
+  int nodeType;// add by liuzhipeng leafnode=1, none-leafnode=0;
+  BT_Element *element;
+} BT_Node;
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    8. Extra credit: of all extra credits 
+
+  No extra credit.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    9. Additional files: of all additional files 
+
+  No additioinal files.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    10. Test cases: of all additional test cases added 
+
+  testInsertAndFind();
+  testDelete();
+  testIndexScan();
+        
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    11. Problems solved  
+
+  Implement all required functions and additional test case.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    12. Problems to be solved
+
+  This program could be optimized.
