@@ -344,7 +344,6 @@ RC findKey (BTreeHandle *tree, Value *key, RID *result)
 			}
 		}
 	}
-    freeNode(node);
 }
 
 /***************************************************************
@@ -366,17 +365,19 @@ RC findKey (BTreeHandle *tree, Value *key, RID *result)
 
 RC insertKey (BTreeHandle *tree, Value *key, RID rid){
     BT_Node *node = NULL, *newnode = NULL, *root = NULL, *point = NULL;
-    BT_Element *element = NULL;
-    int i, intKey, left, right, k=0;
+    int i, intKey, left, right, k=0, maxsize=2*(tree->n+2);
+    BT_Element *element = (BT_Element *)malloc(maxsize * sizeof(BT_Element));
+    
     // If root does not exist, create root.
     if(tree->entryNum==0 || tree->rootPage==-1 || getNode(tree, tree->rootPage, &node) != RC_OK){   
         node = (BT_Node *)calloc(1, sizeof(BT_Node));
         node->isValid = 1;
         node->parent = -1;
         node->current = tree->fileHandle->totalNumPages;
+        appendEmptyBlock(tree->fileHandle);
         node->nodeType = 1;
         node->size = 2;
-        node->element = (BT_Element *)malloc(sizeof(BT_Element) * node->size);
+        node->element = (BT_Element *)malloc(sizeof(BT_Element) * maxsize);
         (*(node->element)).id = rid;
         (*(node->element+1)).node = key->v.intV;
         tree->nodeNum++;
@@ -393,26 +394,23 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid){
                 }
             }
         }
+        
         intKey = key->v.intV;
         do {
             // Insert rid and key into node
             for(i=1; i < node->size+4; i+=2){
                 if((*(node->element+i)).node > intKey || i>=node->size){
-                    if((*(node->element+i-2)).node == key->v.intV){
+                    if(i > 1 && (*(node->element+i-2)).node == intKey){
                         freeNode(node);
                         return RC_IM_KEY_ALREADY_EXISTS;
                     }
-                    if(element == NULL){
-                        element = (BT_Element *)malloc((node->size + 2) * sizeof(BT_Element));
-                    } else {
-                        element = (BT_Element *)realloc(element, (node->size + 2) * sizeof(BT_Element));
-                    }
                     if(node->nodeType == 0){        // if not leaf.
-                        memcpy(element, node->element, sizeof(BT_Element) * i-1);
+                        printNode(node);
+                        memcpy(element, node->element, sizeof(BT_Element) * (i-1));
                         (*(element+i-1)).node = left;
                         (*(element+i)).node = intKey;
                         (*(element+i+1)).node = right;
-                        memcpy(element + i+2, node->element+ i, sizeof(BT_Element) * (node->size+2-i));
+                        memcpy(element + i+2, node->element+ i, sizeof(BT_Element) * (node->size-i));
                     } else {                        // if leaf node
                         memcpy(element, node->element, sizeof(BT_Element) * (i-1));
                         (*(element+i-1)).id = rid;
@@ -420,21 +418,17 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid){
                         memcpy(element + i+1, node->element+ i-1, sizeof(BT_Element) * (node->size+1-i));
                     }
                     node->size+=2;
-                    node->element = (BT_Element *)realloc(node->element, sizeof(BT_Element)*node->size);
                     memcpy(node->element, element, sizeof(BT_Element) * node->size);
                     break;
                 }
             }
-
+            
             if(node->size >= 2*(tree->n+1)){       // If node overflow, then split into 2 nodes.
                 if(newnode == NULL){
                     newnode = (BT_Node *)malloc(sizeof(BT_Node));
-                    newnode->size = node->size/4*2 + node->size%2;
-                    newnode->element = (BT_Element *)calloc(newnode->size, sizeof(BT_Element));  
-                } else {
-                    newnode->size = node->size/4*2 + node->size%2;
-                    newnode->element = (BT_Element *)realloc(newnode->element, newnode->size*sizeof(BT_Element));  
+                    newnode->element = (BT_Element *)calloc(maxsize, sizeof(BT_Element));  
                 }
+                newnode->size = node->size/4*2 + node->size%2;
                 newnode->isValid = 1;
                 newnode->current = tree->fileHandle->totalNumPages;
                 appendEmptyBlock(tree->fileHandle);
@@ -444,21 +438,22 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid){
                     sizeof(BT_Element)*newnode->size);
 
                 node->size = (node->size/2 - node->size/4)*2 + 1;
-                node->element = realloc(node->element, node->size * sizeof(BT_Element));
                 (*(node->element+node->size-1)).node =  newnode->current;   //Point to new node.
 
                 tree->nodeNum++; 
                 if(node->parent == -1){     // Create new root if corrent node do not have parent
-                    left = node->current;      
+                    left = node->current;  
                     if(root == NULL){
                         root = (BT_Node *)malloc(sizeof(BT_Node));
                         root->size = 3;
                         root->isValid = 1;
                         root->parent = -1;
                         root->nodeType = 0;
-                        root->element = (BT_Element *)malloc(sizeof(BT_Element) * root->size);
+                        root->element = (BT_Element *)malloc(sizeof(BT_Element) * 3);
                     }
+
                     root->current = tree->fileHandle->totalNumPages;
+                    appendEmptyBlock(tree->fileHandle);
                     (*(root->element)).node = left;
                     (*(root->element+1)).node = (*(newnode->element+1)).node;
                     (*(root->element+2)).node = newnode->current;
@@ -474,14 +469,9 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid){
                 } else {                    // Insert into root if corrent node have parent
                     setNode(tree, node->current, node);
                     setNode(tree, newnode->current, newnode);
-                    if(node->nodeType == 1){
-                        intKey = (*(newnode->element+1)).node;
-                    } else {
-                        intKey = (*(node->element+node->size-1)).node;
-                    }
+                    intKey = (*(newnode->element+1)).node;
                     left = node->current;      
                     right = newnode->current;
-                    
                     getNode(tree, node->parent, &node);
                 }
             } else {                        // If node not overflow, then save node and break loop
@@ -490,14 +480,12 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid){
             }
         } while (true);
     }
-    if(element != NULL){
-        free(element);
-    }
+    
+    tree->entryNum++;
+    free(element);
     freeNode(node);
     freeNode(newnode);
     freeNode(root);
-    printTree(tree);
-    tree->entryNum++;
     return RC_OK;
 }
 
@@ -520,7 +508,7 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid){
 RC deleteKey (BTreeHandle *tree, Value *key){
     int i;
     BT_Node *node=NULL, *child=NULL, *sibling=NULL;
-
+    
     if(tree->rootPage==-1 || getNode(tree, tree->rootPage, &node) != RC_OK){ 
         freeNode(node);
         return RC_IM_KEY_NOT_FOUND;
@@ -746,7 +734,7 @@ char *printTree (BTreeHandle *tree){
     if(tree->rootPage == -1){
         return "Root not exist";
     }
-    
+    printf("\nThe tree is\n");
     arr[0] = tree->rootPage;
     while(i!=size){
         getNode(tree, arr[i], &node);
@@ -800,6 +788,7 @@ RC getNode (BTreeHandle *tree, int nodeNum, BT_Node **node)
     BM_PageHandle *pg = (BM_PageHandle *)calloc(1, sizeof(BM_PageHandle));
     RC rv = RC_OK;
     bool isNull = false;
+    int maxsize=2*(tree->n+2);
     
     if(*node == NULL){
         isNull = true;
@@ -817,10 +806,8 @@ RC getNode (BTreeHandle *tree, int nodeNum, BT_Node **node)
             memcpy(&(*node)->size, pg->data + 3*sizeof(int), sizeof(int));
             memcpy(&(*node)->nodeType, pg->data + 4*sizeof(int), sizeof(int));
             if(isNull || (*node)->element == NULL){
-                (*node)->element = (BT_Element *)malloc(sizeof(BT_Element) * (*node)->size);
-            } else {
-                (*node)->element = (BT_Element *)realloc((*node)->element, sizeof(BT_Element)*(*node)->size);
-            }
+                (*node)->element = (BT_Element *)malloc(sizeof(BT_Element) * maxsize);
+            } 
             memcpy((*node)->element, pg->data + 5*sizeof(int), sizeof(BT_Element) * (*node)->size);
             rv = unpinPage(tree->bufferPool, pg);
         }
@@ -853,6 +840,7 @@ RC setNode (BTreeHandle *tree, int nodeNum, BT_Node *node)
     
     if( (rv = ensureCapacity(nodeNum+1, tree->fileHandle)) == RC_OK 
         && (rv = pinPage(tree->bufferPool, pg, nodeNum)) == RC_OK){
+        printf("[SetNode]Set node 1\n"); 
         memcpy(pg->data, &node->isValid, sizeof(int));
         memcpy(pg->data + sizeof(int), &node->parent, sizeof(int));
         memcpy(pg->data + 2*sizeof(int), &node->current, sizeof(int));
@@ -863,7 +851,6 @@ RC setNode (BTreeHandle *tree, int nodeNum, BT_Node *node)
         markDirty(tree->bufferPool, pg);
         rv = unpinPage(tree->bufferPool, pg);
     }
-    
     free(pg);
     return rv;
 }
